@@ -4,6 +4,9 @@ WORKDIR /app
 COPY . .
 RUN cargo build --release
 
+ARG DATABASE_URL
+ENV DATABASE_URL=${DATABASE_URL}
+
 # 不要なソフトウェアは不要なので、軽量なイメージを使用
 FROM debian:bookworm-slim
 WORKDIR /app
