@@ -23,7 +23,7 @@ jobs:
 
       - name: Load cached mold
         id: cached-mold
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: /opt/mold
           key: mold-${{ env.MOLD_VERSION }}-${{ steps.detect-arch.outputs.arch }}-linux
