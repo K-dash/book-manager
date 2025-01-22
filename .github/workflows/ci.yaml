@@ -27,8 +27,6 @@ jobs:
         with:
           path: /opt/mold
           key: mold-${{ env.MOLD_VERSION }}-${{ steps.detect-arch.outputs.arch }}-linux
-          restore-keys: |
-            mold-
 
       - name: Install mold
         if: steps.cached-mold.outputs.cache-hit != 'true'
