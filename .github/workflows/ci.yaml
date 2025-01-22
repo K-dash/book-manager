@@ -9,24 +9,58 @@ on:
 
 jobs:
   check:
-    name: Check
+    name: Test & Lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Detect architecture
+        id: detect-arch
+        run: echo "arch=$(uname -m)" >> $GITHUB_OUTPUT
+
+      - name: Load cached mold
+        id: cached-mold
+        uses: actions/cache@v3
+        with:
+          path: /opt/mold
+          key: mold-2.35.1-${{ steps.detect-arch.outputs.arch }}-linux
+          restore-keys: |
+            mold-
+
+      - name: Install mold
+        if: steps.cached-mold.outputs.cache-hit != 'true'
+        run: |
+          MOLD_VERSION=2.35.1
+          ARCH=${{ steps.detect-arch.outputs.arch }}
+          mkdir -p /opt/mold/bin
+          curl -L -O https://github.com/rui314/mold/releases/download/v${MOLD_VERSION}/mold-${MOLD_VERSION}-${ARCH}-linux.tar.gz
+          tar xf mold-${MOLD_VERSION}-${ARCH}-linux.tar.gz
+          cp -p mold-${MOLD_VERSION}-${ARCH}-linux/bin/* /opt/mold/bin/
+          rm -rf mold-${MOLD_VERSION}-${ARCH}-linux*
+
+      - name: Add mold to PATH
+        run: echo "/opt/mold/bin" >> $GITHUB_PATH
+
       - name: Cache dependencies
         uses: Swatinem/rust-cache@v2
+
       - name: Install Rust toolchain
         run: |
           rustup toolchain install stable
+
       - name: Install cargo-related tools
         uses: taiki-e/install-action@v2
         with:
           tool: nextest,cargo-make
+
       - name: Tests compile
         run: cargo make test-ci --no-run --locked
+
       - name: Test
         run: cargo make test-ci
+
       - name: Clippy
         run: cargo make clippy-ci -- -Dwarnings
+
       - name: Rustfmt
         run: cargo make fmt -- --check
