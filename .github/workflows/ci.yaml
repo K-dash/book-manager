@@ -7,6 +7,9 @@ on:
       - "README.md"
       - "frontend/**"
 
+env:
+  MOLD_VERSION: "2.35.1"
+
 jobs:
   check:
     name: Test & Lint
@@ -23,14 +26,13 @@ jobs:
         uses: actions/cache@v3
         with:
           path: /opt/mold
-          key: mold-2.35.1-${{ steps.detect-arch.outputs.arch }}-linux
+          key: mold-${{ env.MOLD_VERSION }}-${{ steps.detect-arch.outputs.arch }}-linux
           restore-keys: |
             mold-
 
       - name: Install mold
         if: steps.cached-mold.outputs.cache-hit != 'true'
         run: |
-          MOLD_VERSION=2.35.1
           ARCH=${{ steps.detect-arch.outputs.arch }}
           mkdir -p /opt/mold/bin
           curl -L -O https://github.com/rui314/mold/releases/download/v${MOLD_VERSION}/mold-${MOLD_VERSION}-${ARCH}-linux.tar.gz
